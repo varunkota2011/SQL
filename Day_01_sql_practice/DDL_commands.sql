@@ -65,5 +65,43 @@ truncate table employees;
 --drop table employees;
 -- drop table department;
 
+alter table project
+add column status varchar(15);
+
+alter table project
+alter column project_name type varchar(50);
+
+alter table project
+rename column start_date to project_start_date;
+
+alter table project
+drop column end_date;
+
+-- truncate table project;
+
+-- drop table project;
+
+-- 👉 Update salary to 70,000 for all HR employees.
+update department
+set salary = 70000
+where dept = 'HR';
+
+-- 👉 Increase the salary by 10% for all employees in the IT department.
+update department
+set salary = salary + (salary*0.10) 
+where dept = 'IT';
+
+-- 👉 Change the department name from 'Admin' to 'Administration'
+update department
+set dept = 'Administration'
+where dept = 'Admin';
+
+-- 👉 Update the email_id of employee 'Priya Patel' to 'priya.patel@company.com'
+update employees
+set email_id = 'priya.patel@company.com'
+where first_name = 'Priya' and last_name = 'Patel';
+
+
+
 
 
