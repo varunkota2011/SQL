@@ -16,6 +16,16 @@ dept varchar(20),
 salary int
 );
 
+create table project(
+project_id int,
+project_name varchar(30),
+emp_id int,
+start_date date,
+end_date date
+);
+
 select * from employees;
 
 select * from department;
+
+select * from project;
