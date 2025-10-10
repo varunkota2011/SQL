@@ -1,0 +1,46 @@
+create table users(
+id int,
+first_name varchar,
+last_name varchar,
+email varchar,
+mobile varchar,
+password varchar,
+avatar varchar,
+dob date,
+is_vendor varchar,
+bio text,
+status bool,
+purchases numeric(10,2)
+);
+
+-- Creating a schema dwh
+CREATE SCHEMA dwh AUTHORIZATION postgres;
+
+ALTER TABLE users
+SET SCHEMA dwh;
+
+CREATE TABLE dwh.Products (
+    ProductID INT,
+    ProductName varchar,
+    Category varchar,
+    Price DECIMAL(10, 2) NOT NULL,
+    Stock INT NOT NULL
+);
+
+CREATE TABLE dwh.Sales (
+    SaleID INT,
+    ProductID INT NOT NULL,
+    QuantitySold INT NOT NULL,
+    SaleDate DATE NOT NULL,
+    CustomerRegion varchar
+);
+
+
+CREATE TABLE dwh.Customer (
+    CustomerID INT,
+    CustomerName varchar NOT NULL,
+    Phone varchar NOT NULL,
+    Email varchar NOT NULL,
+    Address varchar NOT NULL
+);
+
