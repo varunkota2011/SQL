@@ -70,6 +70,38 @@ from vk_employee
 --where job in ('CLERK', 'ANALYST');
 where job = 'CLERK' or job = 'ANALYST';
 
+-- 15. List the emps who joined on 1-MAY-81,3-DEC-81,17-DEC-81,19-JAN-80 in asc order of seniority. 
+select emp_no, e_name, hire_date
+from vk_employee ve 
+where hire_date in ('1981-05-01','1981-12-03','1981-12-17','1980-01-19');
+
+-- 16. List the emp who are working for the Deptno 10 or20.
+select emp_no, e_name, dept_no
+from vk_employee ve 
+where dept_no = 10 OR dept_no = 20;
+ 
+-- 17. List the emps who are joined in the year 81. 
+select emp_no, e_name, dept_no, hire_date
+from vk_employee ve 
+--where hire_date between '1981-01-01' and '1981-12-31';
+where extract(year from hire_date) = 1981;
+
+-- 18. List the emps who are joined in the month of Aug 1980. 
+select emp_no, e_name, dept_no, hire_date
+from vk_employee ve 
+where hire_date between '1980-08-01' and '1980-08-31';
+
+SELECT emp_no, e_name, dept_no, hire_date
+FROM vk_employee
+WHERE EXTRACT(YEAR FROM hire_date) = 1980
+  AND EXTRACT(MONTH FROM hire_date) = 8;
+
+-- 19. List the emps Who Annual sal ranging from 22000 and 45000.
+select emp_no, e_name, salary*12 as Annual_Sal
+from vk_employee ve 
+where salary*12 between 22000 and 45000;
+
+
 
 
 
