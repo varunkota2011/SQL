@@ -1,0 +1,25 @@
+
+select*from dwh.products p ;
+select*from dwh.customer c ;
+select*from dwh.sales s ;
+select*from dwh.users u ;
+
+-- Find all products priced exactly ₹200.
+select * 
+from dwh.products p
+where price = 200;
+
+-- Identify sales with quantities not equal to 10 <>:
+select *
+from dwh.sales s 
+where s.quantitysold <> 10;
+
+-- List all sales where the quantity sold is less than 10.
+select *
+from dwh.sales s 
+where s.quantitysold < 10;
+
+-- Find products in stock and priced below $100
+select *
+from dwh.products p 
+where stock != 0 and price < 100;
