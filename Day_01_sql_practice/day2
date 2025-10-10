@@ -1,0 +1,43 @@
+--👉 Update Karan Singh’s age to 33.
+update employees e 
+set age = 33
+where first_name = 'Karan' and last_name = 'Singh';
+
+--👉 Delete the record of employee whose emp_id = 20.
+delete from employees 
+where emp_id = 20;
+
+--👉 List all employees whose age > 30.
+select *
+from employees e
+where age > 30;
+
+--👉 List all employees whose age > 25 AND age < 30.
+select *
+from employees e
+where age > 25 and age < 30;
+
+--👉 List all employees whose first_name = 'Amit' OR first_name = 'Priya'.
+select *
+from employees e
+where first_name = 'Amit' or first_name = 'Priya';
+
+--👉 List all employees who are not from the age group 25.
+select *
+from employees
+where age != 25;
+
+--👉 List employees whose age is between 26 and 30.
+select *
+from  employees
+where age between 26 and 30;
+
+--👉 List employees whose first_name starts with the letter ‘S’
+select *
+from employees
+where first_name like 'S%';
+
+--👉 List employees whose middle_name IS NULL.
+select *
+from employees
+where middle_name is null;
