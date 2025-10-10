@@ -22,6 +22,9 @@ INSERT INTO employees (emp_id, first_name, middle_name, last_name, age, email_id
 (19, 'Suresh', 'J.', 'Malhotra', 36, 'suresh.malhotra@example.com'),
 (20, 'Ritika', NULL, 'Joshi', 23, 'ritika.joshi@example.com');
 
+INSERT INTO employees (emp_id, first_name, middle_name, last_name, age, email_id) VALUES
+(21, 'Tina', null, 'Kapoor', 29, 'tina.kapoor@example.com');
+
 
 INSERT INTO department (id, dept, salary) VALUES
 (1, 'HR', 45000),
