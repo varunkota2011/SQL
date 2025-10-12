@@ -101,6 +101,67 @@ select emp_no, e_name, salary*12 as Annual_Sal
 from vk_employee ve 
 where salary*12 between 22000 and 45000;
 
+-- 20. List the Enames those are having five characters in their Names.
+select e_name
+from vk_employee ve 
+where length(e_name) = 5;
+ 
+
+-- 21. List the Enames those are starting with ‘S’ and with five characters. 
+select e_name
+from vk_employee ve
+where e_name like 'S%' and length(e_name) = 5;
+
+-- 22. List the emps those are having four chars and third character must be ‘r’. 
+select e_name
+from vk_employee ve
+where e_name like '__R_';
+
+-- 23. List the Five character names starting with ‘S’ and ending with ‘H’. 
+select e_name
+from vk_employee ve
+where e_name like 'S%%H';
+
+-- 24. List the emps who joined in January. 
+select emp_no, e_name, dept_no, hire_date
+from vk_employee ve
+where extract(month from hire_date) = 01; 
+
+-- 25. List the emps who joined in the month of which second character is ‘a’.
+SELECT emp_no, e_name, dept_no, hire_date, TO_CHAR(hire_date, 'Month') as month
+FROM vk_employee
+WHERE TO_CHAR(hire_date, 'Month') ILIKE '_a%'
+order by month;
+
+
+-- 26. List the emps whose Sal is four digit number ending with Zero.
+ select *
+ from Vk_employee
+ where salary between 1000 and 9999
+ and salary % 10 = 0;
+
+-- 27. List the emps whose names having a character set ‘ll’ together. 
+ select *
+ from Vk_employee
+ where e_name like '%LL%';
+
+-- 28. List the emps those who joined in 80’s. 
+select *
+from vk_employee ve 
+where extract(year from hire_date) between 1980 and 1989;
+
+-- 29. List the emps who does not belong to Deptno 20.
+select *
+from vk_employee
+where dept_no != 20;
+
+-- 30. List all the emps except ‘PRESIDENT’ & ‘MGR” in asc order of
+select *
+from vk_employee
+where job != 'PRESIDENT'
+order by mgrs;
+
+
 
 
 
