@@ -161,6 +161,37 @@ from vk_employee
 where job != 'PRESIDENT'
 order by mgrs;
 
+-- 31. List all the emps who joined before or after 1981. 
+select *
+from vk_employee ve 
+where extract(year from hire_date) != 1981;
+
+-- 32. List the emps whose Empno not starting with digit78. 
+select * 
+from vk_employee ve 
+where emp_no::text not like '78%';
+
+-- 33. List the emps who are working under ‘MGR’. 
+select * 
+from vk_employee ve 
+where job = 'MANAGER';
+
+-- 34. List the emps who joined in any year but not belongs to the month of December. 
+select *
+from vk_employee ve 
+where extract(month from hire_date) != 12;
+
+-- 35. List all the Clerks of Deptno 20. 
+select * 
+from vk_employee ve 
+where job = 'CLERK' and dept_no = 20;
+
+-- 36. List the emps of Deptno 30 or 10 joined in the year 1981. 
+select * 
+from vk_employee ve 
+where extract(year from hire_date) = 1981 and dept_no in (10,30);
+
+
 
 
 
