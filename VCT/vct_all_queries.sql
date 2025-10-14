@@ -279,7 +279,16 @@ where salary in (
 order by salary desc;
 
 -- 54. List the emps Whose Jobs are same as MILLER or Sal is more than ALLEN.
- 
+ select e_name, job, salary
+from vk_employee
+where job = (select job 
+			 from vk_employee 
+			 where e_name = 'MILLER') 
+			 or 
+	  salary > (select salary 
+				from vk_employee 
+				where e_name = 'ALLEN');
+
 -- 55. List the Emps whose Sal is > the total remuneration of the SALESMAN. 
 
 -- 56. List the emps who are senior to BLAKE working at CHICAGO & BOSTON. 
@@ -291,6 +300,7 @@ order by salary desc;
 -- 58. List the emps whose jobs same as SMITH or ALLEN. 
 
 -- 59. Write a Query to display the details of emps whose Sal is same as of Any jobs of deptno 10 those that are not found in deptno 20.
+
 
 
 
