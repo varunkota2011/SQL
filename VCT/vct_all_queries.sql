@@ -1,3 +1,4 @@
+
 -- Queries
 
 --1. Display all the information of the EMP table?
@@ -289,7 +290,14 @@ where job = (select job
 				from vk_employee 
 				where e_name = 'ALLEN');
 
--- 55. List the Emps whose Sal is > the total remuneration of the SALESMAN. 
+-- 55. List the Emps whose Sal is > the total remuneration of the SALESMAN.
+select e_name , salary
+from vk_employee
+where salary > (
+				select sum(salary) as totalSal
+				from vk_employee
+				where job = 'SALESMAN'
+				);
 
 -- 56. List the emps who are senior to BLAKE working at CHICAGO & BOSTON. 
 
@@ -297,13 +305,61 @@ where job = (select job
 	RESEARCH whose Sal is more than ALLEN and exp more than
 	SMITH in the asc order of EXP. */
 
--- 58. List the emps whose jobs same as SMITH or ALLEN. 
+-- 58. List the emps whose jobs same as SMITH or ALLEN.
+select e_name, job
+from vk_employee
+where job in (
+				select job 
+				from vk_employee
+				where e_name in ('ALLEN', 'SMITH')
+				);
 
 -- 59. Write a Query to display the details of emps whose Sal is same as of Any jobs of deptno 10 those that are not found in deptno 20.
+select emp_no, e_name, job, salary, dept_no
+from vk_employee
+where salary in  (
+				  select salary 
+				  from vk_employee
+				  where dept_no = 10 
+				  
+				  and 
+				  
+				  salary not in (
+				  				  select salary
+				  				  from vk_employee
+				  				  where dept_no = 20)
+				  );
 
+-- 60. List of emps of emp1 who are not found in emp2. 
+				  
+-- 61. Find the highest sal of EMP table.
+select max(salary) from vk_employee;
+				  
+-- 62. Find details of highest paid employee. 
+select *
+from vk_employee
+order by salary desc limit 1;
 
+-- 63. Find the highest paid employee of sales department. 
+select *
+from vk_employee
+where dept_no = 30
+order by salary desc limit 1;
 
+-- 64. List the most recently hired emp of grade3 belongs to location CHICAGO.
 
+ 
+-- 65. List the employees who are senior to most recently hired employee workingunder king. 
+				  
+/*66. List the details of the employee belongs to newyork with grade 3 to 5 except ‘PRESIDENT’ 
+whose sal> the highest paid employee of Chicago in a group 
+where there is manager and salesman not working under king*/
+
+-- 67. List the details of the senior employee belongs to 1981. 
+
+--68. List the employees who joined in 1981 with the job same as the most seniorperson of the year 1981. 
+
+--69. List the most senior empl working under the king and grade is more than 3.
 
 
 
