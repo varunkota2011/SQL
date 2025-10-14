@@ -191,6 +191,109 @@ select *
 from vk_employee ve 
 where extract(year from hire_date) = 1981 and dept_no in (10,30);
 
+-- 37. Display the details of SMITH. 
+select *
+from vk_employee ve 
+where e_name = 'SMITH';
+
+select * from vk_dept vd ;
+
+-- 38. Display the location of SMITH. 
+
+/* 39. List the total information of EMP table along with DNAME and
+	Loc of all the emps Working Under ‘ACCOUNTING’ & ‘RESEARCH’ in the asc Deptno. */
+
+/* 40. List the Empno, Ename, Sal, Dname of all the ‘MGRS’ and‘ANALYST’ working in New York, Dallas with an exp more than 7
+	years without receiving theComm asc order of Loc. */
+
+/* 41. Display the Empno, Ename, Sal, Dname, Loc, Deptno,Job of all emps
+	working at CHICAGO or working for ACCOUNTING dept with AnnSal>28000, 
+	but the Sal should not be=3000 or 2800 who doesn’t belongs to the 
+	Mgr and whose no is having a digit ‘7’ or ‘8’ in 3rd position in the asc order 
+	of Deptno and desc orderof job. */
+
+-- 42. Display the total information of the emps along with Grades in the asc
+
+
+-- 43. List all the Grade2 and Grade 3 emps. 
+select emp_no, e_name, grade
+from vk_employee ve 
+where grade in (2,3);
+
+
+--44. Display all Grade 4,5 Analyst and Mgr. 
+select *
+from vk_employee ve
+where grade in (4,5) and (job = 'ANALYST' or job = 'MANAGER');
+
+-- 45. List the Empno, Ename, Sal, Dname, Grade, Exp, and Ann Sal of emps working for Dept10 or20.
+select emp_no, e_name, salary,  
+
+/*46. List all the information of emp with Loc and the Grade of all the emps belong to the Grade range from 2 to 4 working at the Dept those are
+	not starting with char set ‘OP’ and not ending with ‘S’ with the designation having a char ‘a’ any where joined in the year 1981 but
+	not in the month of Mar or Sep and Sal not end with ‘00’ in the asc order of Grades
+*/
+
+-- 47. List the details of the Depts along with Empno, Ename or without the emps
+
+-- 48. 48. List the details of the emps whose Salaries more than the employee BLAKE. 
+select *
+from vk_employee ve 
+where salary > (select ve.salary 
+				from vk_employee
+				where e_name = 'BLAKE');
+
+-- 49. List the emps whose Jobs are same as ALLEN. 
+select e_name
+from vk_employee ve 
+where job = (select job
+			from vk_employee 
+			where e_name = 'ALLEN');
+		
+
+-- 50. List the emps who are senior to King. 
+select e_name, hire_date
+from vk_employee
+where hire_date  < (select  hire_date
+					from vk_employee 
+					where e_name = 'KING');
+
+-- 51. List the Emps who are senior to their own MGRS. 
+
+-- 52. List the Emps of Deptno 20 whose Jobs are same as Deptno10.
+select e_name , job
+from vk_employee
+where dept_no = 20 
+	and job in (
+				select job 
+				from vk_employee
+				where dept_no = 10 );
+			
+-- 53. List the Emps whose salary is same as FORD and SMITH in desc order of salary.
+select e_name, salary
+from vk_employee
+where salary in (
+				select salary 
+				from vk_employee
+				where e_name in ('FORD','SMITH'))
+order by salary desc;
+
+-- 54. List the emps Whose Jobs are same as MILLER or Sal is more than ALLEN.
+ 
+-- 55. List the Emps whose Sal is > the total remuneration of the SALESMAN. 
+
+-- 56. List the emps who are senior to BLAKE working at CHICAGO & BOSTON. 
+
+/*57. List the Emps of Grade 3,4 belongs to the dept ACCOUNTING and
+	RESEARCH whose Sal is more than ALLEN and exp more than
+	SMITH in the asc order of EXP. */
+
+-- 58. List the emps whose jobs same as SMITH or ALLEN. 
+
+-- 59. Write a Query to display the details of emps whose Sal is same as of Any jobs of deptno 10 those that are not found in deptno 20.
+
+
+
 
 
 
