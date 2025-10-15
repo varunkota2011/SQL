@@ -1,4 +1,3 @@
-
 -- Queries
 
 --1. Display all the information of the EMP table?
@@ -156,7 +155,7 @@ select *
 from vk_employee
 where dept_no != 20;
 
--- 30. List all the emps except ‘PRESIDENT’ & ‘MGR” in asc order of
+-- 30. List all the emps except ‘PRESIDENT’ & ‘MGR” in asc order of salaries
 select *
 from vk_employee
 where job != 'PRESIDENT'
@@ -280,7 +279,7 @@ where salary in (
 order by salary desc;
 
 -- 54. List the emps Whose Jobs are same as MILLER or Sal is more than ALLEN.
- select e_name, job, salary
+select e_name, job, salary
 from vk_employee
 where job = (select job 
 			 from vk_employee 
@@ -289,8 +288,8 @@ where job = (select job
 	  salary > (select salary 
 				from vk_employee 
 				where e_name = 'ALLEN');
-
--- 55. List the Emps whose Sal is > the total remuneration of the SALESMAN.
+ 
+-- 55. List the Emps whose Sal is > the total remuneration of the SALESMAN. 
 select e_name , salary
 from vk_employee
 where salary > (
@@ -305,7 +304,7 @@ where salary > (
 	RESEARCH whose Sal is more than ALLEN and exp more than
 	SMITH in the asc order of EXP. */
 
--- 58. List the emps whose jobs same as SMITH or ALLEN.
+-- 58. List the emps whose jobs same as SMITH or ALLEN. 
 select e_name, job
 from vk_employee
 where job in (
@@ -313,6 +312,7 @@ where job in (
 				from vk_employee
 				where e_name in ('ALLEN', 'SMITH')
 				);
+
 
 -- 59. Write a Query to display the details of emps whose Sal is same as of Any jobs of deptno 10 those that are not found in deptno 20.
 select emp_no, e_name, job, salary, dept_no
@@ -329,7 +329,7 @@ where salary in  (
 				  				  from vk_employee
 				  				  where dept_no = 20)
 				  );
-
+				  
 -- 60. List of emps of emp1 who are not found in emp2. 
 				  
 -- 61. Find the highest sal of EMP table.
@@ -339,13 +339,13 @@ select max(salary) from vk_employee;
 select *
 from vk_employee
 order by salary desc limit 1;
-
+				  
 -- 63. Find the highest paid employee of sales department. 
 select *
 from vk_employee
 where dept_no = 30
 order by salary desc limit 1;
-
+				  
 -- 64. List the most recently hired emp of grade3 belongs to location CHICAGO.
 
  
@@ -356,18 +356,89 @@ whose sal> the highest paid employee of Chicago in a group
 where there is manager and salesman not working under king*/
 
 -- 67. List the details of the senior employee belongs to 1981. 
+select *
+from vk_employee ve 
+where extract(year from hire_date) = '1981'
+order by hire_date limit 1;
 
---68. List the employees who joined in 1981 with the job same as the most seniorperson of the year 1981. 
+--68. List the employees who joined in 1981 with the job same as the most seniorperson of the year 1981.
+select e_name , job, hire_date 
+from vk_employee
+where extract(year from hire_date)= '1981' 
+and 
+job = (
+		select job	
+		from vk_employee
+		where extract(year from hire_date) = '1981'
+		order by hire_date limit 1
+	 );
 
 --69. List the most senior empl working under the king and grade is more than 3.
+select emp_no, e_name, mgrs, hire_date, grade
+from vk_employee
+where mgrs = 7839 and grade > 3
+order by hire_date limit 1 ;
 
+-- 70. Find the total sal given to the MGR. 
 
+-- 71. Find the total annual sal to distribute job wise in the year 81.
+ 
 
+-- 72. Display total sal employee belonging to grade 3.
+select grade , sum(salary) total_Sal from vk_employee where grade = 3 group by grade ;
 
+-- 73. Display the average salaries of all the clerks. 
+select job, avg(salary) avg_Sal
+from vk_employee ve 
+where job = 'CLERK'
+group by job;
 
+-- 74. List the employeein dept 20 whose sal is >the average sal 0f dept 10 emps. 
+select e_name
+from vk_employee ve 
+where dept_no = 20 
+and 
+salary > (
+		  select avg(salary)
+		  from vk_employee
+		  where dept_no = 10
+		  );
 
+-- 75. Display the number of employee for each job group deptno wise. 
+select dept_no ,job ,count(*)
+from vk_employee
+group by dept_no, job;
 
+-- 76. List the manager no and the number of employees working for those mgrs in the ascending Mgrno. 
+select mgrs, count(emp_no)
+from vk_employee
+group by mgrs 
+order by mgrs;
 
+-- 77. List the department,details where at least two emps are working
+
+-- 78. Display the Grade, Number of emps, and max sal of each grade.
+select grade, count(emp_no) no_emps, max(salary) as max_Sal
+from vk_employee ve 
+group by grade;
+
+-- 79. Display dname, grade, No. of emps where at least two emps are clerks. 
+
+-- 80. List the details of the department where maximum number of emps are working. 
+
+--81. Display the emps whose manager name is jones. 
+select emp_no, e_name, mgrs
+from vk_employee ve 
+where mgrs = (select emp_no from vk_employee where e_name = 'JONES');
+
+-- 82. List the employees whose salary is more than 3000 after giving 20% increment. 
+select emp_no, e_name, salary, salary+(salary*0.2) increment_Sal
+from vk_employee ve 
+where salary+(salary*0.2) > 3000;
+
+--83. List the emps with dept names. 
+
+--84. List the emps who are not working in sales dept.
 
 
 
