@@ -144,7 +144,7 @@ order by month;
  select *
  from Vk_employee
  where e_name like '%LL%';
-
+ 
 -- 28. List the emps those who joined in 80’s. 
 select *
 from vk_employee ve 
@@ -259,7 +259,7 @@ where grade in (2,3);
 --44. Display all Grade 4,5 Analyst and Mgr. 
 select *
 from vk_employee ve
-where grade in (4,5) and (job = 'ANALYST' or job = 'MANAGER');
+where grade in (4,5) and (job in ('ANALYST' , 'MANAGER');
 
 -- 45. List the Empno, Ename, Sal, Dname, Grade, Exp, and Ann Sal of emps working for Dept10 or20.
 select emp_no, e_name, salary,d_name, grade, extract(year from age(current_date, hire_date)) exp, salary*12 as AnnSal, ve.dept_no
@@ -316,9 +316,14 @@ where hire_date  < (select  hire_date
 					where e_name = 'KING');
 
 -- 51. List the Emps who are senior to their own MGRS. 
+select e.e_name as emp_name, e.hire_date as emp_date, m.e_name as mgr_name, m.hire_date as mgr_date
+from vk_employee e
+left join vk_employee m
+on e.mgrs = m.emp_no
+where e.hire_date < m.hire_date ;
 
 -- 52. List the Emps of Deptno 20 whose Jobs are same as Deptno10.
-select e_name , job
+select e_name , job, dept_no
 from vk_employee
 where dept_no = 20 
 	and job in (
@@ -631,65 +636,177 @@ and salary = (select round(avg(salary)) from vk_employee
 where grade = (select grade from vk_employee where e_name = 'FORD'));
 
 -- 91. List the name, job, dname ,sal, grade dept wises
+select e_name, job, d_name, salary, grade
+from vk_employee ve 
+join  vk_dept vd 
+on ve.dept_no = vd.dept_no 
+order by d_name;	
 
-
--- 92. List the emp name, job, sal, grade and dname except clerks and sort on the basisof highest sal. 
+-- 92. List the emp name, job, sal, grade and dname except clerks and sort on the basis of highest sal. 
+select e_name, job, salary, grade, d_name
+from vk_employee ve 
+join vk_dept vd 
+on vd.dept_no = ve.dept_no 
+where job != 'CLERK' 
+order by salary desc;
 
 -- 93. List the emps name, job who are with out manager. 
+select e_name, job
+from vk_employee ve 
+where mgrs is null;
 
 -- 94. List the names of the emps who are getting the highest sal dept wise. 
-
+select e_name, dept_no, grade ,max(salary) highest_Sal
+from vk_employee ve 
+where grade = 1
+group by e_name, dept_no, grade
+order by dept_no ;	
 -- 95. List the emps whose sal is equal to the average of max and minimum
+select e_name
+from vk_employee
+where salary = (select round((max(salary) + min(salary))/2.0,2) from vk_employee);
 
 -- 96. List the no. of emps in each department where the no. is more than 3. 
+select ve.dept_no, count(*) from vk_employee ve group by ve.dept_no having count(*)>3;
 
--- 97. List the names of depts. Where atleast 3 are working in that department. 
+-- 97. List the names of depts. Where atleast 3 are working in that department.
+select d_name, ve.dept_no, count(emp_no)
+from vk_employee ve 
+join vk_dept vd 
+on vd.dept_no = ve.dept_no 
+group by d_name, ve.dept_no having count(emp_no)>3; 
 
 -- 98. List the managers whose sal is more than his employess avg salary. 
+select distinct m.emp_no, m.e_name, m.salary
+from vk_employee m
+join vk_employee e 
+on m.emp_no = e.mgrs 
+group by m.emp_no, m.e_name, m.salary
+having m.salary > avg(e.salary);
 
 -- 99. List the name,salary,comm. For those employees whose net pay is greater than or equal to any other emp salary of the company.
+select e_name, salary, comm
+	
 
--- 100. List the emp whose sal<his manager but more than any other manager. 
+-- 100. List the emp whose sal < his manager but more than any other manager. 
+select e.emp_no, e.e_name, e.salary
+from vk_employee e
+join vk_employee m
+on e.mgrs = m.emp_no 
+where e.salary < m.salary 
+and e.salary > any(select salary from vk_employee where emp_no in (select distinct mgrs from vk_employee) and emp_no != m.emp_no);
 
 -- 101. List the employee names and his average salary department wise. 
+select e.e_name, e.dept_no, d.avg_salary   
+from vk_employee e 
+join (select e.dept_no, round(avg(salary)) as avg_salary from vk_employee e group by e.dept_no) d
+on e.dept_no = d.dept_no
+order by dept_no;
 
 -- 102. Find out least 5 earners of the company. 
+select e_name, salary
+from vk_employee ve 
+order by salary limit 5;
 
 -- 103. Find out emps whose salaries greater than salaries of their managers. 
+select e.e_name emp_name, e.salary emp_sal, m.e_name mgr_name, m.salary mgr_sal
+from vk_employee e
+join vk_employee m
+on e.mgrs = m.emp_no
+where e.salary > m.salary;
 
 -- 104. List the managers who are not working under the president. 
+select e_name
+from vk_employee ve 
+where job = 'MANAGER' and mgrs not in (select emp_no from vk_employee where job = 'PRESIDENT');
 
--- 105. List the records from emp whose deptno isnot in dept.
- 
+-- 105. List the records from emp whose deptno is not in dept.
+select *
+from vk_employee ve 
+left join vk_dept vd 
+on ve.dept_no = vd.dept_no 
+where vd.dept_no is null;
+
 -- 106. List the Name , Salary, Comm and Net Pay is more than any other employee. 
+select e_name, salary, comm , (salary + coalesce(comm, 0)) as net_pay
+from vk_employee ve  
+order by net_pay desc limit 1;
 
 -- 107. List the Enames who are retiring after 31-Dec-89 the max Job period is 20Y. 
+select * , (hire_date + interval '20 years') as aft_20_yrs from vk_employee ve 
+where  hire_date + interval '20 years' > to_date('31-DEC-1989', 'DD-MON-YYYY');
 
 -- 108. List those Emps whose Salary is odd value. 
+select e_name, salary
+from vk_employee ve 
+where (salary%2) = 1;
 
 -- 109. List the emp’s whose Salary contain 3 digits.
+select e_name, salary
+from vk_employee ve 
+where salary between 100 and 999;
  
 -- 110. List the emps who joined in the month of DEC.
+select *
+from vk_employee ve 
+where extract(month from hire_date) = 12;
  
 -- 111. List the emps whose names contains ‘A’. 
+select *
+from vk_employee
+where e_name like '%A%';
 
 -- 112. List the emps whose Deptno is available in his Salary.
 
+
 -- 113. List the emps whose first 2 chars from Hiredate=last 2 characters of Salary. 
+select * from (
+select e_name,
+hire_date, substr(to_char(hire_date, 'YYYY-MM-DD'),1, 2) as first_2_char,
+salary , substr(salary::text, length(salary::text) -1 , 2) as last_2_char
+from vk_employee ve 
+) as dummy_table where first_2_char = last_2_char;
 
 -- 114. List the emps Whose 10% of Salary is equal to year of joining. 
+select * 
+from (
+	select e_name, 
+			salary, 
+			round(salary * 10/100) as sal_10_per,
+			hire_date, 
+			extract(year from hire_date) as year_date 
+			from vk_employee
+			) as dummy_table
+where sal_10_per = year_date;
 
--- 115. List first 50% of chars of Ename in Lower Case and remaining are upper C
+-- 115. List first 50% of chars of Ename in Lower Case and remaining are upper Case
 
--- 116. List the Dname whose No. of Emps is =to number of chars in the Dname.
+-- 116. List the Dname whose No. of Emps is = to number of chars in the Dname.
+select d.d_name, count(*)
+from vk_employee e
+join vk_dept d
+on e.dept_no = d.dept_no 
+group by d.d_name 
+having count(*) = length(trim(d.d_name))  ;
 
 -- 117. List the emps those who joined in company before 15 th of the month. 
+select e_name, hire_date
+from vk_employee
+where extract(day from hire_date) <15;
 
 -- 118. List the Dname, no of chars of which is = no. of emp’s in any other Dept. 
 
+
 -- 119. List the emps who are working as Managers. 
+select e_name from vk_employee ve where job='MANAGER';
 
 -- 120. List THE Name of dept where highest no.of emps are working. 
+select d.d_name, count(*)
+from vk_employee e
+join vk_dept d
+on e.dept_no = d.dept_no 
+group by d.d_name 
+order by count(*) desc limit 1;
 
 -- 121. Count the No.of emps who are working as ‘Managers’(using set option). 
 
