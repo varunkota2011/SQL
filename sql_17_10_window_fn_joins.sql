@@ -302,6 +302,170 @@ avg(salary) over (
 from salaries;
 
 -- Employees whose 2024 salary > their dept’s 2024 average.
+select e.first_name, s.salary
+from employees e join salaries s on e.emp_id = s.emp_id 
+where s.effective_date = '2024-01-01'
+and s.salary > (
+				select avg(s2.salary)
+				from salaries s2 join employees e2 on s2.emp_id = e2.emp_id 
+				where e2.dept_id = e.dept_id and s2.effective_date = '2024-01-01'
+				);
+
+-- Show salary rank across the whole company.
+select emp_id, salary, rank() over (order by salary desc) as company_rank
+from salaries;
+
+-- Yearly salary change per department.
+select e.dept_id, s.emp_id, s.effective_date,
+s.salary - lag(s.salary) over (partition by e.dept_id, s.emp_id order by s.effective_date) as change
+from employees e join salaries s on e.emp_id = s.emp_id;
+
+-- Total company salary by year.
+select extract(year from effective_date) as yr, sum(salary)
+from salaries
+group by yr
+order by yr;
+
+-- Department with highest total salary in 2024.
+select d.dept_name, sum(salary) as total
+from employees e 
+join salaries s on e.emp_id  = s.emp_id
+join departments d on e.dept_id = d.dept_id
+group by d.dept_name 
+order by total desc limit 1;
+
+-- Employees in IT or Finance.
+(select emp_id, first_name from employees where dept_id = 30)
+union
+(select emp_id, first_name from employees where dept_id = 20);
+
+-- Employees in IT but not in Finance.
+(select emp_id, first_name from employees where dept_id = 30)
+except 
+(select emp_id, first_name from employees where dept_id = 20);
+
+-- Common employees working in both IT projects and IT dept.
+(select emp_id from employees 
+where dept_id =30)
+intersect 
+(select emp_id from employee_projects ep 
+join projects p on ep.project_id = p.project_id 
+where p.dept_id = 30);
+
+-- Employees who worked in any project (vs those who didn’t).
+(select emp_id from employees)
+except 
+(select emp_id from employee_projects);
+
+-- Employees in Marketing or Operations departments.
+(select emp_id, first_name from employees where dept_id = 40)
+union all
+(select emp_id, first_name from employees where dept_id = 50);
+
+-- Compare employees hired in 2020 vs 2021.
+(select emp_id, first_name from employees where extract(year from hire_date)=2020)
+intersect
+(select emp_id, first_name from employees where extract(year from hire_date)=2021);
+
+-- Employees whose 2023 salary < 2024 salary.
+(select emp_id from salaries where effective_date='2023-01-01' and salary <
+		(select salary from salaries s2 where s2.emp_id = salaries.emp_id and s2.effective_date = '2024-01-01'))
+intersect 
+(select emp_id from employees);
+
+-- Employees with salary data but not assigned to departments (none expected, test EXCEPT).
+(select emp_id from salaries)
+except
+(select emp_id from employees);
+
+-- Departments that have projects but no employees assigned yet.
+(select dept_id from projects)
+except 
+(select dept_id from employees);
+
+-- Employees in either HR or Marketing but not both.
+(select emp_id from employees where dept_id = 10)
+union
+(select emp_id from employees where dept_id = 40)
+except 
+(select emp_id from employees where dept_id in (10,40)
+group by emp_id having count(distinct dept_id)>1);
+
+-- Get top earner per department (using window).
+select * from(
+	select e.dept_id, e.first_name, s.salary,
+	rank() over (partition by e.dept_id order by s.salary desc) as rnk
+	from employees e join salaries s on e.emp_id = s.emp_id
+) x where rnk=1;
+
+-- Employees whose bonus > average bonus of their dept.
+select e.first_name, s.bonus
+from employees e join salaries s on e.emp_id = s.emp_id 
+where bonus > (
+	select avg(s2.bonus)
+	from salaries s2 join employees e2 on s2.emp_id = e2.emp_id
+	where e2.dept_id = e.dept_id
+);
+
+-- Find salary difference between manager and employee.
+select e.first_name as emp, m.first_name as mgr,
+       s.salary - sm.salary as diff
+from employees e
+join employees m on e.manager_id = m.emp_id
+join salaries s on e.emp_id = s.emp_id
+join salaries sm on m.emp_id = sm.emp_id;
+
+-- Employees promoted (salary growth > 15%).
+select emp_id, effective_date, salary, gwt_pct
+from (
+    select emp_id,
+           effective_date,
+           salary,
+           round(
+             ((salary - lag(salary) over (partition by emp_id order by effective_date)) /
+              lag(salary) over (partition by emp_id order by effective_date)) * 100, 2
+           ) as gwt_pct
+    from salaries
+) t
+where gwt_pct > 15;
+
+-- Department with highest average bonus in 2024.
+select d.dept_name, avg(s.bonus) avg_bonus
+from employees e 
+join  salaries s on e.emp_id = s.emp_id
+join departments d on e.dept_id = d.dept_id 
+where s.effective_date = '2024-01-01'
+group by d.dept_name 
+order by avg_bonus desc limit 1;
+
+-- Show year with highest overall company payroll.
+select extract(year from effective_date) as yr,
+sum(salary) as total_pay
+from salaries
+group by yr
+order by total_pay desc limit 1;
+
+-- Find all employees earning above company average (2024).
+select e.first_name, s.salary
+from employees e
+join salaries s on e.emp_id = s.emp_id 
+where effective_date = '2024-01-01'
+and s.salary > (select avg(salary) from salaries where effective_date = '2024-01-01');
+
+-- Employees working on multiple projects.
+select emp_id, count(project_id) as num_projcets
+from employee_projects ep 
+group by emp_id 
+having count(project_id) > 1;
+
+-- Highest paid employee across all years (ever).
+select emp_id, max(salary) as max_salary
+from salaries 
+group by emp_id 
+order by max_salary desc
+limit 1;
+
+
 
 
 
