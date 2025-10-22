@@ -809,42 +809,150 @@ group by d.d_name
 order by count(*) desc limit 1;
 
 -- 121. Count the No.of emps who are working as ‘Managers’(using set option). 
+select count(*) as mgr_count
+from (
+	select emp_no from vk_employee ve 
+	intersect
+	select mgrs from vk_employee ve 
+);
 
 -- 122. List the emps who joined in the company on the same date.
+select e_name, hire_date
+from vk_employee 
+where hire_date = (select hire_date from vk_employee group by hire_date having count(hire_date)>1);
+
+select e.e_name from vk_employee e join vk_employee e1 on e.hire_date = e1.hire_date WHERE
+e.emp_no <> e1.emp_no;
 
 -- 123. List the details of the emps whose Grade is equal to one tenth of Sales Dept. 
+select e_name, grade
+from vk_employee where grade in (select distinct round(dept_no/10)
+from vk_dept where d_name = 'sales');
 
--- 124. List the name of the dept where more than average no. of emps are working. 
+-- 124. List the name of the dept where more than average no. of emps are working.
+with no_of_emp_in_dept as (
+	select dept_no, count(emp_no) as emp_count 
+	from vk_employee e 
+	group by dept_no
+),
+avg_emp as (
+	select avg(emp_count) as avg_count
+	from no_of_emp_in_dept 
+)
+select d.d_name, emp_count
+from vk_dept d 
+join no_of_emp_in_dept n on d.dept_no = n.dept_no 
+where n.emp_count > (select avg_count from avg_emp);
+------------------------------------------------------------------
+select d_name, count(*) 
+from vk_employee e 
+join vk_dept d on e.dept_no = d.dept_no 
+group by d_name 
+having count(*) > (select round(count(*)/count(distinct dept_no)) as avg_no_emp_in_dept from vk_employee);
 
--- 125. List the Managers name who is having max no.of emps working under him. 
+
+-- 125. List the Managers name who are having max no.of emps working under him. 
+with no_emp_mgr as (
+	select mgrs , count(emp_no) as emp_count
+	from vk_employee e
+	where mgrs is not null
+	group by mgrs
+	)
+select e.emp_no, e.e_name, emp_count
+from vk_employee e 
+join no_emp_mgr n on n.mgrs = e.emp_no
+where n.emp_count = (
+    select max(emp_count)
+    from no_emp_mgr) ;
 
 -- 126. List the Ename and Sal is increased by 15% and expressed as no.of Dollars. 
+select 
+    e_name,
+    salary,
+    round(salary * 1.15, 2) as increased_salary,
+    concat('$', round(salary * 1.15, 2)) as salary_in_dollars
+from vk_employee;
 
 -- 127. Produce the output of EMP table ‘EMP_AND_JOB’ for Ename and Job. 
+select e_name , job , concat(e_name,'_AND_',job) from vk_employee;
 
 /* 128. Produce the following output from EMP.
 					EMPLOYEE
 					SMITH (clerk)
 					ALLEN(Salesman)
 */
+select concat(e_name, ' ( ', job, ' )') as concat_emp_dept from vk_employee;
 
-
-/* 130. List the emps with Hire date in format June 4, 1988. 131)Print a list of emp’s Listing ‘just salary’ if Salary is more than 1500, 
-	on target ifSalary is 1500 and ‘Below 1500’ if Salary is less than 1500. */
+-- 130. List the emps with Hire date in format June 4, 1988. 
+select e_name,
+	   to_char(hire_date, 'Month DD, YYYY') as f_hire_date
+from vk_employee ;
+ 
+/* 131)Print a list of emp’s Listing ‘just salary’ if Salary is more than 1500, 
+ on target if Salary is 1500 and ‘Below 1500’ if Salary is less than 1500.*/
+select e_name, salary,
+	case 
+		when salary > 1500 then 'Just Salary'
+		when salary = 1500 then 'On target'
+		else 'Below 1500'
+	end salary_analysis
+from vk_employee;
 
 -- 132. Write a query which return the day of the week for any date entered in format‘DD-MM-YY’. 
+select e_name, hire_date, to_char(hire_date, 'Day') as day_of_week from vk_employee;
 
 -- 133. Write a query to calculate the length of service of any employee with thecompany, use DEFINE to avoid repetitive typing of functions.
 
+
 /* 134. Give a string of format ‘NN/NN’, verify that the first and last two characters are numbers and that the middle character is’/’. Print the
 	expression ‘YES’ if valid, ‘NO’ if not valid. Use the following values to test your solution. ‘12/34’,’01/1a’, ‘99/98’. */
+select 
+    test_value,
+    case 
+        when test_value ~ '^[0-9]{2}/[0-9]{2}$' then 'YES'
+        else 'NO'
+    end as is_valid
+from (
+    values 
+        ('12/34'),
+        ('01/1a'),
+        ('99/98')
+) as t(test_value);
 
-/* 135. Emps hired on or before 15th of any month are paid on the last Friday of that month those hired after 15 th are paid on the 
-	first Friday of the following month. Print a list of emps their hire date and*/
 
--- 136. Count the no. of characters with out considering spaces for each name. 
+/* 135. Emps hired on or before 15th of any month are paid on the last Friday of that month those hired after 15th are paid on the 
+	first Friday of the following month. Print a list of emps their hire date and the first pay date. sort on hire date.*/
+select 
+    emp_no,
+    e_name,
+    hire_date,
+    case
+        when extract(day from hire_date) <= 15 then 
+            -- Last Friday of the same month
+            (
+                date_trunc('month', hire_date) 
+                + interval '1 month' - interval '1 day'
+            ) 
+            - ((extract(dow from (date_trunc('month', hire_date) + interval '1 month' - interval '1 day'))::int + 2) % 7)
+            * interval '1 day'
+        else
+            -- First Friday of the next month
+            (
+                date_trunc('month', hire_date) 
+                + interval '1 month'
+            ) 
+            + ((5 - extract(dow from (date_trunc('month', hire_date) + interval '1 month'))) % 7)
+            * interval '1 day'
+    end as first_pay_date
+from vk_employee
+order by hire_date;
 
--- 137. Find out the emps who are getting decimal value in their Sal without using likeoperator. 
+
+-- 136. Count the no. of characters without considering spaces for each name. 
+select e_name, trim(e_name), length(trim(e_name)) as len_without_space from vk_employee;
+
+-- 137. Find out the emps who are getting decimal value in their Sal without using like operator. 
+select * from vk_employee where MOD(Salary, 1) <> 0;
 
 -- 138. List those emps whose Salary contains first four digit of their Deptno
 
