@@ -916,7 +916,7 @@ from (
     values 
         ('12/34'),
         ('01/1a'),
-        ('99/98')
+        ('89/98')
 ) as t(test_value);
 
 
@@ -955,55 +955,280 @@ select e_name, trim(e_name), length(trim(e_name)) as len_without_space from vk_e
 select * from vk_employee where MOD(Salary, 1) <> 0;
 
 -- 138. List those emps whose Salary contains first four digit of their Deptno
+select 
+    emp_no,
+    e_name,
+    dept_no,
+    salary
+from vk_employee
+where salary::text like '%' || substring(dept_no::text from 1 for 2) || '%';
 
 -- 139. List those Managers who are getting less than his emps Salary. 
+select 
+	m.e_name as mgr_name,
+	m.salary as mgr_sal,
+	e.e_name as emp_name,
+	e.salary as emp_sal
+from vk_employee e
+join vk_employee m on e.mgrs = m.emp_no 
+where m.salary < e.salary;
 
--- 140. Print the details of all the emps who are sub-ordinates to Blake. 
+-- 140. Print the details of all the emps who are sub-ordinates to Blake.
+select 
+	emp_no,
+	e_name,
+	mgrs,
+	salary
+from vk_employee ve 
+where mgrs = (select emp_no from vk_employee where e_name = 'BLAKE');
 
--- 141. List the emps who are working as Managers using co-related sub- query. 
+-- 141. List the emps who are working as Managers using co-related sub- query.
+select 
+	e_name,
+	emp_no
+from vk_employee e 
+where exists (select mgrs from vk_employee m where m.mgrs = e.emp_no  );
 
 -- 142. List the emps whose Mgr name is ‘Jones’ and also with his Manager name.
+select 
+	e.e_name as emp_name,
+	m.e_name as mgr_name,
+	mm.e_name as mgrs_mgr_name
+from vk_employee e
+join vk_employee m on m.emp_no = e.mgrs 
+join vk_employee mm on mm.emp_no = m.mgrs
+where m.e_name = 'JONES';
 
 /* 143. Define a variable representing the expression used to calculate on emps total annual remuneration use the variable in a statement, 
 	which finds all emps who can earn 30000 a year or more. */
+with params as (select 3000 as annual_limit)
+select 
+	 e.e_name,
+	 e.salary, 
+	(e.salary * 12) as annual_salary,
+	case
+		when (e.salary*12) > p.annual_limit then 'Above 3000'
+		else 'Below 3000'
+	end as salary_cat
+from vk_employee e
+cross join params p;
 
 -- 144. Find out how may Managers are their in the company. 
+select count(*) as count_of_mgr 
+from vk_employee 
+where job = 'MANAGER' 
+group by job;
 
--- 145. Find Average salary and Average total remuneration for each Job type.Remember Salesman earn commission.secommm
+-- 145. Find Average salary and Average total remuneration for each Job type.Remember Salesman earn commission.
 
 -- 146. Check whether all the emps numbers are indeed unique. 
+select emp_no , count(*) as duplicate 
+from vk_employee  
+group by emp_no 
+having count(*) > 1;
 
--- 147. List the emps who are drawing less than 1000 Sort the output by Salary. 
+-- 147. List the emps who are drawing less than 1000 Sort the output by Salary.
+select 
+	e_name,
+	salary
+from vk_employee
+where salary < 1000
+order by salary;
 
--- 148. List the employee Name, Job, Annual Salary, deptno, Dept name and grade whoearn 36000 a year or who are not CLERKS. 
+-- 148. List the employee Name, Job, Annual Salary, deptno, Dept name and grade who earn 36000 a year or who are not CLERKS. 
+select 
+	e.e_name,
+	e.job,
+	(e.salary*12) as AnnSal,
+	e.dept_no,
+	d.d_name,
+	e.grade
+from vk_employee e
+join vk_dept d on e.dept_no = d.dept_no 
+where e.salary*12 > 36000 and e.job != 'CLERK';
 
 -- 149. Find out the Job that was filled in the first half of 1983 and same job that was filled during the same period of 1984. 
+(
+    select distinct job
+    from vk_employee
+    where hire_date between '1983-01-01' and '1983-06-30'
+)
+intersect
+(
+    select distinct job
+    from vk_employee
+    where hire_date between '1984-01-01' and '1984-06-30'
+);
+
 
 -- 150. Find out the emps who joined in the company before their Managers. 
+select 
+	e.e_name as emp_name,
+	e.hire_date as emp_hire_date,
+	m.e_name as mgr_name,
+	m.hire_date as mgr_hire_date
+from vk_employee e
+join vk_employee m on e.mgrs = m.emp_no 
+where e.hire_date < m.hire_date ;
 
--- 151. List all the emps by name and number along with their Manager’s name andnumber. Also List KING who has no ‘Manager’. 
+-- 151. List all the emps by name and number along with their Manager’s name and number. Also List KING who has no ‘Manager’. 
+select 
+	e.emp_no as emp_no,
+	e.e_name as emp_name,
+	m.emp_no as mgr_no,
+	m.e_name as mgr_name	
+from vk_employee e
+left join vk_employee m on e.mgrs = m.emp_no ;
 
 -- 152. Find all the emps who earn the minimum Salary for each job wise in ascending order.
+with ranked_sal as (
+	select
+		e_name,
+		job,
+		salary,
+		dense_rank() over (partition by job order by salary) as rnk
+	from vk_employee
+)
+select 
+	e_name,
+	job,
+	salary
+from ranked_sal 
+where rnk = 1
+order by job, salary;
 
 -- 153. Find out all the emps who earn highest salary in each job type. Sort in descending salary order.
+with ranked_sal as (
+	select
+		e_name,
+		job,
+		salary,
+		dense_rank() over (partition by job order by salary desc) as rnk
+	from vk_employee
+)
+select 
+	e_name,
+	job,
+	salary
+from ranked_sal 
+where rnk = 1
+order by salary desc;
 
 -- 154. Find out the most recently hired emps in each Dept order by Hiredate. 
+with recent_hire as (
+	select
+		e_name,
+		job,
+		hire_date,
+		dense_rank() over (partition by job order by hire_date desc) as rnk
+	from vk_employee
+)
+select 
+	e_name,
+	job,
+	hire_date
+from recent_hire 
+where rnk = 1
+order by hire_date desc;
 
--- 155. List the employee name,Salary and Deptno for each employee who earns asalary greater than the average for their department order by Deptno. 
+-- 155. List the employee name,Salary and Deptno for each employee who earns salary greater than the average for their department order by Deptno. 
+with avg_dept_sal as (
+	select 
+		dept_no,
+		round(avg(salary)) as avgSal
+	from vk_employee 
+	group by dept_no 
+	order by dept_no
+)
+select 
+	e.e_name,
+	e.dept_no,
+	e.job,
+	e.salary,
+	a.avgSal
+from avg_dept_sal a 
+join vk_employee e 
+on a.dept_no = e.dept_no
+where e.salary > a.avgSal
+order by e.dept_no;
 
 -- 156. List the Deptno where there are no emps. 
+select d.dept_no 
+from vk_dept d 
+left join vk_employee e 
+on d.dept_no = e.dept_no 
+where e.emp_no is null;
 
 -- 157. List the No.of emp’s and Avg salary within each department for each job. 
+select 
+	dept_no,
+	count(*) as no_of_emp,
+	round(avg(salary)) as avgSal
+from vk_employee 
+group by dept_no 
+order by dept_no;
 
 -- 158. Find the maximum average salary drawn for each job except for ‘President’. 
+with avg_dept_sal as (
+	select 
+		job,
+		round(avg(salary)) as avgSal
+	from vk_employee 
+	group by job
+	order by job
+)
+select 
+	distinct e.job,
+	a.avgSal
+from avg_dept_sal a 
+join vk_employee e 
+on a.job = e.job
+where e.job != 'PRESIDENT'
+group by e.e_name, e.dept_no,	 e.job, e.salary, a.avgSal
+order by e.job;
+--
+select job, avg(salary) as avg_sal
+from vk_employee e where job <> 'president' group by job order by avg_sal desc limit 1;
 
 -- 159. Find the name and Job of the emps who earn Max salary and Commission. 
+select 
+	e_name, 
+	job,
+	max(salary) max_salary,
+	comm
+from vk_employee ve
+where comm is not null
+group by e_name, job, salary, comm
+order by salary desc limit 1;
 
--- 160. List the Name, Job and Salary of the emps who are not belonging to thedepartment 10 but who have the same job and Salary as the emps of dept 10. 
+--
+select * from vk_employee  
+where salary = (select max(salary) from vk_employee) 
+				or comm = (select max(comm) from vk_employee);
+
+-- 160. List the Name, Job and Salary of the emps who are not belonging to the department 10 but who have the same job and Salary as the emps of dept 20. 
+select e_name, dept_no , job, salary 
+from vk_employee 
+where dept_no != 10 
+and job in (select job from vk_employee where dept_no = 20) 
+and salary in (select salary from vk_employee where dept_no = 20);
 
 -- 161. List the Deptno, Name, Job, Salary and Sal+Comm of the SALESMAN who are earning maximum salary and commission in descending order. 
+select 
+	dept_no,
+	e_name,
+	job,
+	salary,
+	comm,
+	salary+comm  t_sal
+from vk_employee 
+where job = 'SALESMAN'
+and salary = (select max(salary) from vk_employee where job = 'SALESMAN' )
+or comm = (select max(comm) from vk_employee where job = 'SALESMAN' )
+order by comm desc;
 
 -- 162. List the Deptno, Name, Job, Salary and Sal+Comm of the emps who earn the second highest earnings (sal + comm.). 
+
 
 -- 163. List the Deptno and their average salaries for dept with the average salary less than the averages for all department
 
