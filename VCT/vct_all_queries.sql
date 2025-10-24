@@ -459,7 +459,10 @@ vd.dept_no = ve.dept_no
 where grade between 3 and 5
 	and loc = 'NEWYORK'
 	and job != 'PRESIDENT'
-	and salary > ( select max(salary) from vk_employee join vk_dept vd on vd.dept_no = ve.dept_no where loc = 'CHICAGO')
+	and salary > ( 	select max(salary) 
+					from vk_employee ve
+					join vk_dept vd on vd.dept_no = ve.dept_no 
+					where loc = 'CHICAGO' )
 	and mgrs = 7839 
 	and job not in ('MANAGER', 'SALESMAN');
 	
@@ -1228,163 +1231,404 @@ or comm = (select max(comm) from vk_employee where job = 'SALESMAN' )
 order by comm desc;
 
 -- 162. List the Deptno, Name, Job, Salary and Sal+Comm of the emps who earn the second highest earnings (sal + comm.). 
-
+select
+	dept_no,
+	e_name,
+	job,
+	salary,
+	salary+comm as t_sal
+from vk_employee
+order by t_sal
+limit 1 offset 1;
 
 -- 163. List the Deptno and their average salaries for dept with the average salary less than the averages for all department
+select 
+	dept_no,
+	round(avg(salary)) as dep_avg_sal
+from vk_employee 
+group by dept_no 
+having avg(salary) < (select avg(salary) from vk_employee);
 
 -- 164. List out the Names and Salaries of the emps along with their manager names and salaries for those emps who earn more salary than their Manager. 
+select 
+	e.e_name as emp_name,
+	e.salary as emp_sal,
+	m.e_name as mgr_name,
+	m.salary as mgr_sal
+from vk_employee e 
+join vk_employee m on m.emp_no = e.mgrs 
+where e.salary > m.salary;
 
--- 165. List out the Name, Job, Salary of the emps in the department with the highestaverage salary. 
+-- 165. List out the Name, Job, Salary of the emps in the department with the highest average salary. 
+select 
+	e_name,
+	job,
+	salary,
+	dept_no,
+	avg(salary) as avg_d_sal
+from vk_employee ve 
+group by e_name, job, salary, dept_no 
+order by avg_d_sal desc limit 1;
 
 -- 166. List the empno,sal,comm. Of emps. 
+select 
+	emp_no,
+	e_name,
+	salary,
+	comm
+from vk_employee ve ;
 
 -- 167. List the details of the emps in the ascending order of the sal. 
+select * from vk_employee order by salary;
 
 -- 168. List the dept in the ascending order of the job and the desc order of the emps print empno, ename.
+select
+	dept_no,
+	emp_no,
+	e_name
+from vk_employee ve 
+order by job, emp_no desc, e_name desc;
 
 -- 169. Display the unique dept of the emps. 
+select distinct dept_no from vk_employee ve ;
 
--- 170. Display the unique dept with jobs. 
+-- 170. Display the unique dept with jobs.
+select distinct dept_no, job from vk_employee;
 
 -- 171. Display the details of the blake. 
+select * from vk_employee where e_name = 'BLAKE';
 
 -- 172. List all the clerks. 
+select * from vk_employee where job = 'CLERK';
 
 -- 173. list all the employees joined on 1st may 81. 
+select * from vk_employee where hire_date = '1981-05-01';
 
--- 174. List the empno,ename,sal,deptno of the dept 10 emps in the ascending order ofsalary.
+-- 174. List the empno,ename,sal,deptno of the dept 10 emps in the ascending order of salary.
+select * from vk_employee where dept_no = 10 order by salary;
 
 -- 175. List the emps whose salaries are less than 3500. 
+select * from vk_employee where salary < 3500;
 
 -- 176. List the empno,ename,sal of all the emp joined before 1 apr 81. 
+select * from vk_employee where hire_date < '1981-04-01';
 
 -- 177. List the emp whose annual sal is <25000 in the asc order of the salaries. 
+select e_name, salary Mon_Sal, salary*12 as Ann_Sal from vk_employee where salary*12 < 25000
 
 -- 178. List the empno,ename,annsal,dailysal of all the salesmen in the asc ann sal
+select emp_no, e_name, salary*12 as Ann_sal, salary/30 as daily_sal from vk_employee where job = 'SALESMAN' order by salary*12;
 
 -- 179. List the empno,ename,hiredate,current date & exp in the ascending order of experience.
+select emp_no, e_name, hire_date, current_date, extract(year from age(current_date, hire_date) ) exp from vk_employee order by exp;
 
 -- 180. List the emps whose exp is more than 10 years. 
+select e_name, extract(year from age(current_date, hire_date) ) exp 
+from vk_employee
+where extract(year from age(current_date, hire_date) ) > 10;
 
 -- 181. List the empno,ename,sal,TA30%,DA 40%,HRA50%,GROSS,LIC,PF,net,deduction,net allow and net sal in the ascending order of the net salary.
 
 -- 182. List the emps who are working as managers. 
+select e_name, job from vk_employee ve where job = 'MANAGER';
 
 -- 183. List the emps who are either clerks or managers. 
+select e_name, job from vk_employee ve where job in ('MANAGER' , 'CLERK');
 
 -- 184. List the emps who have joined on the following dates 1 may 81,17 nov 81,30 dec 81
+select e_name, hire_date from vk_employee ve where hire_date in ('1981-05-01', '1981-11-17', '1981-12-30' );
 
 -- 185. List the emps who have joined in the year 1981. 
+select e_name, extract(year from hire_date) hire_year from vk_employee ve where extract(year from hire_date) = 1981;
 
 -- 186. List the emps whose annual sal ranging from 23000 to 40000. 
+select e_name, salary*12 as Ann_sal from vk_employee where salary*12 between 23000 and 40000;
 
 -- 187. List the emps working under the mgrs 7369,7890,7654,7900. 
+select e_name, mgrs from vk_employee ve where mgrs in (7369,7890,7654,7900);
 
 -- 188. List the emps who joined in the second half of 82. 
+select e_name, hire_date from vk_employee where hire_date >= '1982-06-01' and hire_date <= '1982-12-31';
 
 -- 189. List all the 4char emps. 
+select e_name from vk_employee ve where e_name like '____';
 
 -- 190. List the emp names starting with ‘M’ with 5 chars. 
+select e_name from vk_employee ve where e_name like 'M_____';
 
 -- 191. List the emps end with ‘H’ all together 5 chars. 
+select e_name from vk_employee ve where e_name like '____H';
 
 -- 192. List names start with ‘M’. 
+select e_name from vk_employee ve where e_name like 'M%';
 
--- 193. List the emps who joined in the year 81. 
+-- 193. List the emps who joined in the year 81.
+select e_name, extract(year from hire_date) hire_year from vk_employee ve where extract(year from hire_date) = 1981; 
 
 -- 194. List the emps whose sal is ending with 00. 
+select e_name, salary from vk_employee where salary::text like '%00';
 
 -- 195. List the emp who joined in the month of JAN. 
+select e_name, to_char(hire_date, 'Month') as hire_month from vk_employee ve where extract(month from hire_date) = 01; 
 
--- 196. Who joined in the month having char ‘a’. 
+-- 196. Who joined in the month having char ‘a’.
+ select e_name, to_char(hire_date, 'Month') as hire_month from vk_employee ve where to_char(hire_date, 'Month') like '%a%';
 
 -- 197. Who joined in the month having second char ‘a’ 
+select e_name, to_char(hire_date, 'Month') as hire_month from vk_employee ve where to_char(hire_date, 'Month') like '_a%';
 
--- 198. List the emps whose salary is 4 digit number. 
+-- 198. List the emps whose salary is 4 digit number.
+ select e_name, salary from vk_employee where salary::text like '____';
 
 -- 199. List the emp who joined in 80’s. 
+select e_name, extract(year from hire_date) hire_year from vk_employee ve where extract(year from hire_date) = 1980;
 
 -- 200. List the emp who are clerks who have exp more than 8ys. 
+select e_name, job, extract(year from age(current_date, hire_date) ) exp 
+from vk_employee
+where extract(year from age(current_date, hire_date) ) > 8 and job = 'CLERK';
 
 -- 201. List the mgrs of dept 10 or 20. 
+select mgrs, dept_no  from vk_employee where dept_no in (10, 20) order by dept_no;
 
 -- 202. List the emps joined in jan with salary ranging from 1500 to 4000. 
+select e_name, salary,  to_char(hire_date, 'Month') as hire_month 
+from vk_employee ve 
+where extract(month from hire_date) = 01 and salary between 1500 and 4000; 
 
 -- 203. List the unique jobs of dept 20 and 30 in desc order. 
+select distinct job , dept_no from vk_employee ve where dept_no in (20,30) order by dept_no desc;
 
 -- 204. List the emps along with exp of those working under the mgr whose number is starting with 7 but should not have a 9 joined before 1983.
+select e_name, extract(year from age(current_date, hire_date) ) exp, mgrs, hire_date
+from vk_employee 
+where mgrs::text like '7%' 
+and mgrs::text not like '%9%' 
+and extract(year from hire_date) < 1983;
 
 -- 205. List the emps who are working as either mgr or analyst with the salary ranging from 2000 to 5000 and without commission.
+select e_name, job, salary
+from vk_employee
+where job in ('MANAGER', 'ANALYST')
+and salary between 2000 and 5000
+and comm is null;
 
--- 206. List the empno,ename,sal,job of the emps with /ann sal <34000 but receiving some comm. Which should not be>sal and desg should be sales man workingfor dept 30.
+-- 206. List the empno,ename,sal,job of the emps with ann sal <34000 but receiving some comm. Which should not be>sal and desg should be sales man workingfor dept 30.
+select emp_no, e_name, salary*12  Ann_sal, job, dept_no 
+from vk_employee ve 
+where salary*12 < 34000
+and job = 'SALESMAN' and dept_no = 30;
 
 /* 207. List the emps who are working for dept 10 or 20 with desgs as clerk or analyst with a sal is either 3 or 4 digits with an exp>8ys but does
 		not belong to mons of mar,apr,sep and working for mgrs &no is not ending with 88 and 56.*/
+select e_name,mgrs, dept_no, job, salary, extract(year from age(current_date, hire_date) ) exp, to_char(hire_date, 'Month') as hire_month
+from vk_employee
+where dept_no in (20, 30)
+and job in ('CLERK', 'ANALYST')
+and (salary::text like '___' or salary::text like '____')
+and extract(year from age(current_date, hire_date) ) > 8
+and (mgrs::text not like '%88' and mgrs::text not like '%56')
+and to_char(hire_date, 'Month') not in ('March', 'April', 'September');
 
 /* 208)List the empno,ename,sal,job,deptno&exp of all the emps belongs to dept 10 or 20 with an exp 6 to 10 y working under the same mgr
 		with out comm. With a job not ending irrespective of the position with comm.>200 with exp>=7y and sal<2500 but not belongs to the
 		month sep or nov working under the mgr whose no is not having digits either 9 or 0 in the asc dept& desc dept */
+select e_name,mgrs, dept_no, job, salary, extract(year from age(current_date, hire_date) ) exp, to_char(hire_date, 'Month') as hire_month
+from vk_employee
+where (
+	dept_no in (20, 10)
+	and extract(year from age(current_date, hire_date) ) between 6 and 10 
+	and (comm is null and comm = 0)
+	)
+	or
+	(
+	(comm > 200)
+	and extract(year from age(current_date, hire_date)) >= 7
+	and salary < 2500
+	and to_char(hire_date, 'Mon') not in ('Sep', 'Nov')
+	and mgrs::text not like '%9%'
+    and mgrs::text not like '%0%'
+	)
+order by dept_no, emp_no desc;
 
 -- 209. List the details of the emps working at Chicago. 
+select *
+from vk_employee e
+join vk_dept d on e.dept_no = d.dept_no 
+where d.loc = 'CHICAGO';
 
--- 210. List the empno,ename,deptno,loc of all the emps. 
+-- 210. List the empno,ename,deptno,loc of all the emps.
+select e.emp_no, e.e_name, e.dept_no, d.loc 
+from vk_employee e
+join vk_dept d on e.dept_no = d.dept_no; 
 
 -- 211. List the empno,ename,loc,dname of all the depts.,10 and 20. 
+select e.emp_no, e.e_name, e.dept_no, d.loc , d.d_name
+from vk_employee e
+join vk_dept d on e.dept_no = d.dept_no 
+where e.dept_no in (10,20);
 
---212. List the empno, ename, sal, loc of the emps working at Chicago dallas with anexp>6ys. 
+--212. List the empno, ename, sal, loc of the emps working at Chicago dallas with an exp>6ys. 
+select e.emp_no, e.e_name, e.salary, e.dept_no, d.loc 
+from vk_employee e
+join vk_dept d on e.dept_no = d.dept_no
+where d.loc in ('CHICAGO', 'DALLAS')
+and extract(year from age(current_date, hire_date)) > 6;
 
 -- 213. List the emps along with loc of those who belongs to dallas ,newyork with salranging from 2000 to 5000 joined in 81. 
+select e.emp_no, e.e_name, e.salary, e.dept_no, d.loc , e.hire_date
+from vk_employee e
+join vk_dept d on e.dept_no = d.dept_no
+where d.loc in ('NEWYORK', 'DALLAS')
+and e.salary between 2000 and 5000
+and extract(year from hire_date) = 1981;
 
 -- 214. List the empno,ename,sal,grade of all emps. 
+select emp_no, e_name, salary, grade
+from vk_employee;
 
 -- 215. List the grade 2 and 3 emp of Chicago. 
+select e.emp_no, e.e_name, e.grade, d.loc 
+from vk_employee e
+join vk_dept d on e.dept_no = d.dept_no
+where d.loc = 'CHICAGO'
+and e.grade in (2,3);
 
 -- 216. List the emps with loc and grade of accounting dept or the locs dallas orChicago with the grades 3 to 5 &exp >6y
+select e.emp_no, e.e_name, e.dept_no, e.grade, d.d_name, d.loc 
+from vk_employee e
+join vk_dept d on e.dept_no = d.dept_no
+where d.d_name = 'ACCOUNTING'
+or d.loc in ('CHICAGO', 'DALLAS')  
+and e.grade between 3 and 5
+and extract(year from age(current_date, hire_date)) > 6;
 
--- 217. List the grades 3 emps of research and operations depts.. joined after 1987 andwhose names should not be either miller or allen. 
+-- 217. List the grades 3 emps of research and operations depts.. joined after 1987 and whose names should not be either miller or allen. 
+select e.emp_no, e.e_name, e.grade, d.d_name, e.hire_date 
+from vk_employee e
+join vk_dept d on e.dept_no = d.dept_no
+where e.grade = 3
+and d.d_name in ('RESEARCH', 'OPERATIONS')
+and extract(year from hire_date) > 1987
+and e.e_name not in ('MILLER', 'ALLEN');
 
--- 218. List the emps whose job is same as smith. 
+-- 218. List the emps whose job is same as smith.
+select e_name, job
+from vk_employee ve 
+where job = (select job from vk_employee where e_name = 'SMITH');
 
--- 219. List the emps who are senior to miller. 
+-- 219. List the emps who are senior to miller.
+select e_name, hire_date
+from vk_employee ve 
+where hire_date < (select hire_date from vk_employee where e_name = 'MILLER');
 
--- 220. List the emps whose job is same as either allen or sal>allen. 
+-- 220. List the emps whose job is same as either allen or sal > allen. 
+select e_name, job, salary
+from vk_employee ve 
+where job = (select job from vk_employee where e_name = 'ALLEN')
+or salary >  (select salary from vk_employee where e_name = 'ALLEN');
 
--- 221. List the emps who are senior to their own manager. 
+-- 221. List the emps who are senior to their own manager.
+select
+	e.emp_no as emp_no,
+	e.e_name as emp_name,
+	e.hire_date as emp_hiredate,
+	m.emp_no as mgr_no,
+	m.e_name as mgr_name,
+	m.hire_date as mgrs_hiredate
+from vk_employee e
+join vk_employee m on m.emp_no = e.mgrs 
+where e.hire_date < m.hire_date;
 
 -- 222. List the emps whose sal greater than blakes sal. 
+select e_name, job, salary
+from vk_employee ve 
+where salary >  (select salary from vk_employee where e_name = 'BLAKE');
 
 -- 223. List the dept 10 emps whose sal>allen sal. 
+select e_name, job, salary, dept_no
+from vk_employee ve 
+where salary >  (select salary from vk_employee where e_name = 'ALLEN') and dept_no = 10;
 
 -- 224. List the mgrs who are senior to king and who are junior to smith. 
+select
+	emp_no,
+	e_name,
+	mgrs, 
+	hire_date
+from vk_employee 
+where hire_date 
 
 -- 225. List the empno,ename,loc,sal,dname,loc of the all the emps belonging to king's dept.
+select e.emp_no, e.e_name, e.salary,e.dept_no,  d.d_name , d.loc
+from vk_employee e
+join vk_dept d on e.dept_no = d.dept_no
+where e.dept_no = (select e2.dept_no from vk_employee e2 where e2.e_name = 'KING');
 
--- 226. List the emps whose salgrade are greater than the grade of miller. 
+-- 226. List the emps whose sal grade are greater than the grade of miller. 
+select e.emp_no, e.e_name, e.grade
+from vk_employee e
+where e.grade > (select grade from vk_employee where e_name = 'MILLER');
 
--- 227. List the emps who are belonging dallas or Chicago with the grade same asadamsor exp more than smith. 
+-- 227. List the emps who are belonging dallas or Chicago with the grade same as adams  or exp more than smith. 
+select e.emp_no, e.e_name, e.salary,e.grade,e.dept_no,  d.d_name , d.loc, extract(year from age(current_date, hire_date)) as exp
+from vk_employee e
+join vk_dept d on e.dept_no = d.dept_no
+where d.loc in ('CHICAGO', 'DALLAS') 
+and e.grade = (select e1.grade from vk_employee e1 where e1.e_name = 'ADAMS')
+or extract(year from age(current_date, hire_date)) > (select extract(year from age(current_date, hire_date)) from vk_employee e2 where e2.e_name = 'SMITH');
+)
 
 -- 228. List the emps whose sal is same as ford or blake. 
+select e_name, salary
+from vk_employee 
+where salary in (select salary from vk_employee where e_name in ('FORK', 'BLAKE'));
 
 -- 229. List the emps whose sal is same as any one of the following. 
+select *
+from vk_employee 
+where salary in (select salary from vk_employee group by salary having count(*) >1);
 
 -- 230. Sal of any clerk of emp1 table. 
+select * from vk_employee where job = 'CLERK';
 
 -- 231. Any emp of emp2 joined before 82. 
+select *
+from vk_employee 
+where hire_date < '1982-01-01';
 
 -- 232. The total remuneration (sal+comm.) of all sales person of Sales dept belongingto emp3 table. 
+select sum(salary + coalesce(comm,0)) t_rem
+from vk_employee 
+where job = 'SALESMAN'
+and dept_no = (select dept_no from vk_dept where d_name = 'SALES');
 
 -- 233. Any Grade 4 emps Sal of emp 4 table. 
+select e_name from vk_employee ve where grade = 4;
 
 -- 234. Any emp Sal of emp5 table. 
+select e_name, salary from vk_employee ve ;
 
 -- 235. List the highest paid emp. 
+select e_name, salary from vk_employee order by salary desc limit 1;
 
 -- 236. List the details of most recently hired emp of dept 30. 
+select * from vk_employee where dept_no = 30 order by hire_date desc limit 1;
 
--- 237. List the highest paid emp of Chicago joined before the most recentlyhired empof grade 2. 
+-- 237. List the highest paid emp of Chicago joined before the most recentlyhired emp of grade 2.
+select e.e_name, e.salary, e.grade, e.hire_date, d.loc 
+from vk_employee e
+join vk_dept d on e.dept_no = d.dept_no 
+and d.loc = 'CHICAGO'
+and e.hire_date < (select e1.hire_date from vk_employee e1 where e1.grade =2 order by hire_date desc limit 1)
+order by e.salary desc limit 1;
+
 
 -- 238. List the highest paid emp working under King
-
+select e_name, salary 
+from vk_employee ve 
+where mgrs = (select emp_no from vk_employee  where e_name = 'KING') 
+order by salary desc limit 1;
 
 
 
